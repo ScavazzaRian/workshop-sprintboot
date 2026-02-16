@@ -13,6 +13,8 @@ import com.educandoweb.demo.repositories.UserRepository;
 import com.educandoweb.demo.services.exceptions.DatabaseException;
 import com.educandoweb.demo.services.exceptions.ResourceNotFoundException;
 
+import jakarta.persistence.EntityNotFoundException;
+
 // @Component Registra a classe como componente do Spring
 // @Repository
 @Service
@@ -44,11 +46,24 @@ public class UserService {
 	}
 	
 	public User update(Long id, User user) {
-		User obj = userRepository.getReferenceById(id);
-		obj.setName(user.getName());
-		obj.setPassword(user.getPassword());
-		obj.setEmail(user.getEmail());
-		obj.setPhone(obj.getPhone());
-		return obj;
+		try {
+			User entity = userRepository.getReferenceById(id);
+			updateData(entity, user);
+			return userRepository.save(entity);
+		} catch (EntityNotFoundException e) {
+			throw new ResourceNotFoundException(id);
+		}
+	}
+	
+	private void updateData(User entity, User user) {
+		if(user.getName() != null) {
+			entity.setName(user.getName());
+		}
+		if(user.getEmail() != null) {
+			entity.setEmail(user.getEmail());
+		}
+		if(user.getPhone() != null) {
+			entity.setPhone(user.getPhone());
+		}
 	}
 }
